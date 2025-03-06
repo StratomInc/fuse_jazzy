@@ -52,6 +52,11 @@
     another node
     </description>
   </class>
+  <class type="fuse_models::Gnss" base_class_type="fuse_core::SensorModel">
+    <description>
+    Generates absolute contraints from the GPS style sensor
+    </description>
+  </class>
   <class type="fuse_models::Transaction" base_class_type="fuse_core::SensorModel">
     <description>
     An adapter-type sensor that produces transactions with the same added and removed constraints from an input

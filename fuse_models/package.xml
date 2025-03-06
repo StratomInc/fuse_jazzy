@@ -16,6 +16,8 @@
   <depend>boost</depend>
   <depend>libceres-dev</depend>
   <depend>eigen</depend>
+  <depend>robot_localization</depend>
+  <depend>backward_ros</depend>
 
   <build_depend>fuse_constraints</build_depend>
   <build_depend>fuse_core</build_depend>

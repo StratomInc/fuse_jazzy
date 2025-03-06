@@ -77,6 +77,8 @@ add_library(${PROJECT_NAME}
   src/absolute_orientation_3d_stamped_constraint.cpp
   src/absolute_orientation_3d_stamped_euler_constraint.cpp
   src/absolute_pose_2d_stamped_constraint.cpp
+  src/absolute_pose_only_2d_stamped_constraint.cpp
+  src/normal_prior_pose_only_2d.cpp
   src/absolute_pose_3d_stamped_constraint.cpp
   src/marginal_constraint.cpp
   src/marginal_cost_function.cpp

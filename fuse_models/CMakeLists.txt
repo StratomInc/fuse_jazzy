@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(fuse_models)
 
+
+set(depends
+robot_localization
+)
+
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -33,6 +38,8 @@ find_package(tf2_ros REQUIRED)
 
 find_package(Ceres REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(robot_localization REQUIRED)
 
 ###########
 ## Build ##
@@ -46,11 +53,15 @@ add_library(${PROJECT_NAME}
   src/odometry_2d.cpp
   src/odometry_2d_publisher.cpp
   src/pose_2d.cpp
+  src/gnss.cpp
   src/transaction.cpp
   src/twist_2d.cpp
   src/unicycle_2d.cpp
   src/unicycle_2d_ignition.cpp
   src/unicycle_2d_state_kinematic_constraint.cpp
+)
+ament_target_dependencies(${PROJECT_NAME}
+  robot_localization
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -136,6 +147,9 @@ ament_export_dependencies(
   Ceres
   Eigen3
   Boost
+
+  rosidl_default_generators
+  robot_localization
 )
 
 ament_package()
