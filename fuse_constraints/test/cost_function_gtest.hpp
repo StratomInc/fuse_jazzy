@@ -38,7 +38,6 @@
 
 #include <memory>
 #include <vector>
-#include <Eigen/Core>
 
 /**
  * @brief A helper function to compare a expected and actual cost function.
@@ -53,8 +52,7 @@
  */
 static void ExpectCostFunctionsAreEqual(
   const ceres::CostFunction & cost_function,
-  const ceres::CostFunction & actual_cost_function, 
-  const double tol = 1e-16)
+  const ceres::CostFunction & actual_cost_function)
 {
   EXPECT_EQ(cost_function.num_residuals(), actual_cost_function.num_residuals());
   const size_t num_residuals = cost_function.num_residuals();
@@ -70,22 +68,8 @@ static void ExpectCostFunctionsAreEqual(
   }
 
   std::unique_ptr<double[]> parameters(new double[num_parameters]);
-  if ((num_parameters == 7) && (parameter_block_sizes[0] == 3) &&
-    (parameter_block_sizes[1] == 4))
-  {
-    // Special case for parameters[1] as quaternion
-    for (size_t i = 0; i < 3; i++) {
-      parameters[i] = static_cast<double>(i) + 1.0;
-    }
-    Eigen::Quaterniond q = Eigen::Quaterniond::UnitRandom();
-    parameters[3] = q.w();
-    parameters[4] = q.x();
-    parameters[5] = q.y();
-    parameters[6] = q.z();
-  } else {
-    for (size_t i = 0; i < num_parameters; ++i) {
-      parameters[i] = static_cast<double>(i) + 1.0;
-    }
+  for (size_t i = 0; i < num_parameters; ++i) {
+    parameters[i] = static_cast<double>(i) + 1.0;
   }
 
   std::unique_ptr<double[]> residuals(new double[num_residuals]);
@@ -112,7 +96,7 @@ static void ExpectCostFunctionsAreEqual(
       parameter_blocks.get(), actual_residuals.get(),
       nullptr));
   for (size_t i = 0; i < num_residuals; ++i) {
-    EXPECT_NEAR(residuals[i], actual_residuals[i], tol) << "residual id: " << i;
+    EXPECT_DOUBLE_EQ(residuals[i], actual_residuals[i]) << "residual id: " << i;
   }
 
   EXPECT_TRUE(
@@ -124,11 +108,11 @@ static void ExpectCostFunctionsAreEqual(
       parameter_blocks.get(), actual_residuals.get(),
       actual_jacobian_blocks.get()));
   for (size_t i = 0; i < num_residuals; ++i) {
-    EXPECT_NEAR(residuals[i], actual_residuals[i], tol) << "residual : " << i;
+    EXPECT_DOUBLE_EQ(residuals[i], actual_residuals[i]) << "residual : " << i;
   }
 
   for (size_t i = 0; i < num_residuals * num_parameters; ++i) {
-    EXPECT_NEAR(jacobians[i], actual_jacobians[i], tol)
+    EXPECT_DOUBLE_EQ(jacobians[i], actual_jacobians[i])
       << "jacobian : " << i << " " << jacobians[i] << " " << actual_jacobians[i];
   }
 }
