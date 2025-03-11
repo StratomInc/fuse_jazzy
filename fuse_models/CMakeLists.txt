@@ -18,6 +18,7 @@ endif()
 
 find_package(ament_cmake_ros REQUIRED)
 
+find_package(covariance_geometry_ros REQUIRED)
 find_package(fuse_constraints REQUIRED)
 find_package(fuse_core REQUIRED)
 find_package(fuse_graphs REQUIRED)
@@ -50,8 +51,11 @@ add_library(${PROJECT_NAME}
   src/acceleration_2d.cpp
   src/graph_ignition.cpp
   src/imu_2d.cpp
+  src/imu_3d.cpp
   src/odometry_2d.cpp
   src/odometry_2d_publisher.cpp
+  src/odometry_3d.cpp
+  src/odometry_3d_publisher.cpp
   src/pose_2d.cpp
   src/gnss.cpp
   src/transaction.cpp
@@ -59,6 +63,9 @@ add_library(${PROJECT_NAME}
   src/unicycle_2d.cpp
   src/unicycle_2d_ignition.cpp
   src/unicycle_2d_state_kinematic_constraint.cpp
+  src/omnidirectional_3d.cpp
+  src/omnidirectional_3d_ignition.cpp
+  src/omnidirectional_3d_state_kinematic_constraint.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}
   robot_localization
@@ -68,6 +75,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(${PROJECT_NAME}
+  covariance_geometry_ros::covariance_geometry_ros
   Ceres::ceres
   fuse_constraints::fuse_constraints
   fuse_core::fuse_core
@@ -126,6 +134,7 @@ ament_export_targets(${PROJECT_NAME}-export HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   ament_cmake_ros
 
+  covariance_geometry_ros
   fuse_constraints
   fuse_core
   fuse_graphs
