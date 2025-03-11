@@ -425,12 +425,14 @@ inline bool preprocessNavSat(const sensor_msgs::msg::NavSatFix* nav_sat_fix_msg,
                              const double magnetic_declination_radians, const double yaw_offset,
                              geometry_msgs::msg::Pose* pose_out)
 {
-  if (!imu_msg)
-  {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("sensor_proc"),
-                       "No IMU message provided. Cannot create constraint.");
-    return false;
-  }
+  // TODO: This was causing issues with fromLL because we don't use the IMU at the moment. Fix this
+  // with the port to 3d state estimation.
+  //   if (!imu_msg)
+  //   {
+  //     RCLCPP_WARN_STREAM(rclcpp::get_logger("sensor_proc"),
+  //                        "No IMU message provided. Cannot create constraint.");
+  //     return false;
+  //   }
   if (!init_gnss_msg_)
   {
     RCLCPP_WARN_STREAM(rclcpp::get_logger("sensor_proc"), "No initial GNSS message provided.");
@@ -514,8 +516,8 @@ inline bool processNavSat(const std::string& source, const fuse_core::UUID& devi
   double easting;
   std::string zone;
 
-  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf" ,nav_sat_fix.latitude);
-  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf" ,nav_sat_fix.longitude);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", nav_sat_fix.latitude);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", nav_sat_fix.longitude);
   LatitudeLongitudeToUTM(nav_sat_fix.latitude, nav_sat_fix.longitude, northing, easting, zone);
   geometry_msgs::msg::PoseWithCovarianceStamped transformed_message, raw_message;
   raw_message.header = nav_sat_fix.header;
@@ -560,8 +562,8 @@ inline bool processNavSat(const std::string& source, const fuse_core::UUID& devi
   transformed_message = raw_message;
 
   RCLCPP_INFO(rclcpp::get_logger("fuse"), "pre-rotated");
-  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf" ,transformed_message.pose.pose.position.x);
-  RCLCPP_INFO(rclcpp::get_logger("fuse"),  "%lf" ,transformed_message.pose.pose.position.y);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", transformed_message.pose.pose.position.x);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", transformed_message.pose.pose.position.y);
 
   if (use_imu_yaw && imu_msg != nullptr)
   {
@@ -590,24 +592,24 @@ inline bool processNavSat(const std::string& source, const fuse_core::UUID& devi
   }
   RCLCPP_INFO(rclcpp::get_logger("fuse"), "latlon ");
 
-  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf" ,init_gnss_msg_->latitude);
-  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf" ,init_gnss_msg_->longitude);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", init_gnss_msg_->latitude);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", init_gnss_msg_->longitude);
   double northing_init;
   double easting_init;
-  LatitudeLongitudeToUTM(init_gnss_msg_->latitude, init_gnss_msg_->longitude, northing_init, easting_init,
-                         zone);
+  LatitudeLongitudeToUTM(init_gnss_msg_->latitude, init_gnss_msg_->longitude, northing_init,
+                         easting_init, zone);
 
   RCLCPP_INFO(rclcpp::get_logger("fuse"), "pre-normalized");
-  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf" ,transformed_message.pose.pose.position.x);
-  RCLCPP_INFO(rclcpp::get_logger("fuse"),  "%lf" ,transformed_message.pose.pose.position.y);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", transformed_message.pose.pose.position.x);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", transformed_message.pose.pose.position.y);
   RCLCPP_INFO(rclcpp::get_logger("fuse"), "init");
-  RCLCPP_INFO(rclcpp::get_logger("fuse"),  "%lf" ,easting_init);
-  RCLCPP_INFO(rclcpp::get_logger("fuse"),  "%lf" ,northing_init);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", easting_init);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", northing_init);
   transformed_message.pose.pose.position.x -= easting_init;
   transformed_message.pose.pose.position.y -= northing_init;
   RCLCPP_INFO(rclcpp::get_logger("fuse"), "normalized");
-  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf" ,transformed_message.pose.pose.position.x);
-  RCLCPP_INFO(rclcpp::get_logger("fuse"),  "%lf" ,transformed_message.pose.pose.position.y);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", transformed_message.pose.pose.position.x);
+  RCLCPP_INFO(rclcpp::get_logger("fuse"), "%lf", transformed_message.pose.pose.position.y);
   // Generate tf2d transforms
   tf2_2d::Transform absolute_pose_2d;
   tf2::fromMsg(transformed_message.pose.pose, absolute_pose_2d);
@@ -651,14 +653,12 @@ inline bool processNavSat(const std::string& source, const fuse_core::UUID& devi
   auto constraint = fuse_constraints::AbsolutePoseOnly2DStampedConstraint::make_shared(
       source, *position, pose_mean_partial, pose_covariance_partial, position_indices);
 
-
   constraint->loss(loss);
   transaction.addVariable(position);
   transaction.addConstraint(constraint);
   transaction.addInvolvedStamp(nav_sat_fix.header.stamp);
   RCLCPP_INFO(rclcpp::get_logger("fuse"), "end ");
   return true;
-
 }
 
 /**
